@@ -1,0 +1,9 @@
+[package]
+name = "doctor"
+version = "0.1.0"
+authors = ["dylan_DPC <dylan.dpc@gmail.com>"]
+
+[dependencies]
+reqwest = "0.8"
+failure = "0.1"
+scraper = "0.7"
