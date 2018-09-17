@@ -7,3 +7,4 @@ authors = ["dylan_DPC <dylan.dpc@gmail.com>"]
 reqwest = "0.8"
 failure = "0.1"
 scraper = "0.7"
+indexmap = "1.0"
