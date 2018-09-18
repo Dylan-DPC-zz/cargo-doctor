@@ -1,5 +1,5 @@
 extern crate reqwest;
-extern crate failure;
+#[macro_use] extern crate failure;
 extern crate scraper;
 extern crate indexmap;
 
