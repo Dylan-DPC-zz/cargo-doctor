@@ -2,52 +2,111 @@ use reqwest::{Url, get};
 use failure::Error;
 use scraper::{Html, Selector};
 use std::ops::{Deref, DerefMut};
+use std::path::{Path, PathBuf};
+use std::fs::File;
+use std::io::{BufReader, prelude::*};
 use indexmap::{IndexSet, set::IntoIter};
+use std::iter::FromIterator;
 
-pub struct Scraper {
-    pub path: Url
+#[derive(Clone, Debug)]
+pub struct RemoteScraper {
+    pub path: Url,
 }
 
-impl Scraper {
-    pub fn new(path: &Url) -> Scraper {
-        Scraper { path: path.to_owned() }
+impl RemoteScraper {
+    pub fn new(path: &Url) -> RemoteScraper {
+        RemoteScraper { path: path.to_owned() }
     }
 
-    pub fn from(path: &str) -> Result<Scraper, Error> {
-        Ok(Scraper { path: Url::parse(path)? })
+    pub fn from(path: &str) -> Result<RemoteScraper, Error> {
+        Ok(RemoteScraper { path: Url::parse(path)? })
     }
 
-    pub fn scrape(self) -> Result<LinksList, Error> {
+    pub fn scrape(self) -> Result<IndexSet<String>, Error> {
         let body = get(self.path.as_str())?.text()?;
-        let document = Html::parse_document(&body);
-        let picker = Selector::parse(".module-item").unwrap();
+        extract_links_from_document(&body)
+    }
+}
 
-        if body.contains("<h1>The requested resource does not exist</h1>") {
-            Err(Error::from(LinkBroken))
-        } else {
-            let mut text = IndexSet::default();
-            for node in document.select(&picker) {
-                let attributes = node.inner_html();
-                let pred: &[_] = &['<', 't', 'd', '>', '/'];
-                let attribute_pred: &[_] = &['h', 'r', 'e', 'f', '=', '"'];
-                attributes.trim_matches(pred).split(' ')
-                    .filter(|x| x.contains("href") && !x.contains("\"../"))
-                    .map(|x| x.trim_matches(attribute_pred).splitn(2, '\"').take(1).collect::<String>())
-                    .for_each(|x| { text.insert(x); });
+#[derive(Clone, Debug)]
+pub struct LocalScraper {
+    pub path: PathBuf,
+}
+
+impl LocalScraper {
+    pub fn new(path: &Path) -> LocalScraper {
+        LocalScraper { path: path.to_owned() }
+    }
+
+    pub fn from(path: &str) -> LocalScraper {
+        LocalScraper { path: PathBuf::from(path) }
+    }
+
+    pub fn scrape(self) -> Result<IndexSet<String>, Error> {
+        let body = self.text_from_local_path()?;
+        extract_links_from_document(&body)
+    }
+
+    fn text_from_local_path(&self) -> Result<String, Error> {
+        match File::open(&self.path) {
+            Ok(f) => {
+                let mut buf_reader = BufReader::new(f);
+                let mut contents = String::new();
+                buf_reader.read_to_string(&mut contents).expect("cannot read from file");
+
+                Ok(contents)
             }
-            Ok(LinksList::parse(text))
+            Err(_) => Err(Error::from(LinkBroken))
         }
     }
-
 }
 
+fn extract_links_from_document(body: &str ) -> Result<IndexSet<String>, Error> {
+    let document = Html::parse_document(&body);
+    let picker = Selector::parse(".module-item").unwrap();
+
+    if body.contains("<h1>The requested resource does not exist</h1>") {
+        Err(Error::from(LinkBroken))
+    } else {
+        let mut text = IndexSet::default();
+        for node in document.select(&picker) {
+            let attributes = node.inner_html();
+            let pred: &[_] = &['<', 't', 'd', '>', '/'];
+            attributes.trim_matches(pred).split(' ')
+                .filter(|x| x.contains("href") && !x.contains("\"../"))
+                .map(|x| {
+                    let replace = x.replace("href=\"", "");
+                    let link = replace.split(">").take(1).collect::<String>();
+                    if link.is_empty() {
+                        replace.to_string()
+                    } else {
+                        link
+                    }
+                })
+                .map(|x| {
+                    let replace = x.split("\"").take(1).collect::<String>();
+                    if replace.is_empty() {
+                        x.to_string()
+                    } else {
+                        replace
+                    }
+                })
+                .map(|x| x.replace("\"", ""))
+                .for_each(|x| {
+
+                    text.insert(x); });
+        }
+
+        Ok(text)
+    }
+}
 
 
 #[derive(Clone, Debug)]
 pub struct LinksList(pub IndexSet<String>);
 
 impl LinksList {
-    fn parse<T: Into<IndexSet<String>>>(links: T) -> LinksList {
+    pub fn parse<T: Into<IndexSet<String>>>(links: T) -> LinksList {
         LinksList(links.into())
     }
 }
@@ -81,4 +140,3 @@ impl IntoIterator for LinksList
 #[derive(Debug, Fail)]
 #[fail(display = "link is broken or doesn't exist")]
 struct LinkBroken;
-

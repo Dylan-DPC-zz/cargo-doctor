@@ -1,10 +1,15 @@
 [package]
-name = "doctor"
+name = "cargo-doctor"
 version = "0.1.0"
 authors = ["dylan_DPC <dylan.dpc@gmail.com>"]
 
 [dependencies]
-reqwest = "0.8"
+reqwest = "0.9"
 failure = "0.1"
 scraper = "0.7"
 indexmap = "1.0"
+cargo_metadata = "0.6"
+
+[dependencies.clap]
+git = "https://github.com/clap-rs/clap"
+default_features = false
