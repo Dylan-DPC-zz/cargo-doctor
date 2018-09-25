@@ -1,12 +1,13 @@
-use reqwest::{Url, get};
 use failure::Error;
+use indexmap::IndexSet;
+use reqwest::{get, Url};
 use scraper::{Html, Selector};
+use std::fmt::{self, Display, Formatter};
+use std::fs::File;
+use std::io::{prelude::*, BufReader};
 use std::ops::{Deref, DerefMut};
 use std::path::{Path, PathBuf};
-use std::fs::File;
-use std::io::{BufReader, prelude::*};
-use indexmap::{IndexSet, set::IntoIter};
-use std::iter::FromIterator;
+use std::vec::IntoIter;
 
 #[derive(Clone, Debug)]
 pub struct RemoteScraper {
@@ -15,11 +16,15 @@ pub struct RemoteScraper {
 
 impl RemoteScraper {
     pub fn new(path: &Url) -> RemoteScraper {
-        RemoteScraper { path: path.to_owned() }
+        RemoteScraper {
+            path: path.to_owned(),
+        }
     }
 
     pub fn from(path: &str) -> Result<RemoteScraper, Error> {
-        Ok(RemoteScraper { path: Url::parse(path)? })
+        Ok(RemoteScraper {
+            path: Url::parse(path)?,
+        })
     }
 
     pub fn scrape(self) -> Result<IndexSet<String>, Error> {
@@ -35,11 +40,15 @@ pub struct LocalScraper {
 
 impl LocalScraper {
     pub fn new(path: &Path) -> LocalScraper {
-        LocalScraper { path: path.to_owned() }
+        LocalScraper {
+            path: path.to_owned(),
+        }
     }
 
     pub fn from(path: &str) -> LocalScraper {
-        LocalScraper { path: PathBuf::from(path) }
+        LocalScraper {
+            path: PathBuf::from(path),
+        }
     }
 
     pub fn scrape(self) -> Result<IndexSet<String>, Error> {
@@ -52,16 +61,18 @@ impl LocalScraper {
             Ok(f) => {
                 let mut buf_reader = BufReader::new(f);
                 let mut contents = String::new();
-                buf_reader.read_to_string(&mut contents).expect("cannot read from file");
+                buf_reader
+                    .read_to_string(&mut contents)
+                    .expect("cannot read from file");
 
                 Ok(contents)
             }
-            Err(_) => Err(Error::from(LinkBroken))
+            Err(_) => Err(Error::from(LinkBroken)),
         }
     }
 }
 
-fn extract_links_from_document(body: &str ) -> Result<IndexSet<String>, Error> {
+fn extract_links_from_document(body: &str) -> Result<IndexSet<String>, Error> {
     let document = Html::parse_document(&body);
     let picker = Selector::parse(".module-item").unwrap();
 
@@ -72,7 +83,9 @@ fn extract_links_from_document(body: &str ) -> Result<IndexSet<String>, Error> {
         for node in document.select(&picker) {
             let attributes = node.inner_html();
             let pred: &[_] = &['<', 't', 'd', '>', '/'];
-            attributes.trim_matches(pred).split(' ')
+            attributes
+                .trim_matches(pred)
+                .split(' ')
                 .filter(|x| x.contains("href") && !x.contains("\"../"))
                 .map(|x| {
                     let replace = x.replace("href=\"", "");
@@ -82,53 +95,57 @@ fn extract_links_from_document(body: &str ) -> Result<IndexSet<String>, Error> {
                     } else {
                         link
                     }
-                })
-                .map(|x| {
+                }).map(|x| {
                     let replace = x.split("\"").take(1).collect::<String>();
                     if replace.is_empty() {
                         x.to_string()
                     } else {
                         replace
                     }
-                })
-                .map(|x| x.replace("\"", ""))
+                }).map(|x| x.replace("\"", ""))
                 .for_each(|x| {
-
-                    text.insert(x); });
+                    text.insert(x);
+                });
         }
 
         Ok(text)
     }
 }
 
-
 #[derive(Clone, Debug)]
-pub struct LinksList(pub IndexSet<String>);
+pub struct LinksList(pub Vec<String>);
 
 impl LinksList {
-    pub fn parse<T: Into<IndexSet<String>>>(links: T) -> LinksList {
-        LinksList(links.into())
+    pub fn parse(links: &[String]) -> LinksList {
+        LinksList(links.to_vec())
     }
 }
 
 impl Deref for LinksList {
-    type Target = IndexSet<String>;
+    type Target = Vec<String>;
 
-    fn deref(&self) -> &IndexSet<String> {
+    fn deref(&self) -> &Vec<String> {
         &self.0
     }
-
 }
 
 impl DerefMut for LinksList {
-    fn deref_mut(&mut self) -> &mut IndexSet<String> {
+    fn deref_mut(&mut self) -> &mut Vec<String> {
         &mut self.0
     }
-
 }
 
-impl IntoIterator for LinksList
-{
+impl Display for LinksList {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
+        for item in self.iter() {
+            writeln!(f, "{}", item)?;
+        }
+
+        Ok(())
+    }
+}
+
+impl IntoIterator for LinksList {
     type Item = String;
     type IntoIter = IntoIter<String>;
 
