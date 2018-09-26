@@ -69,12 +69,36 @@ impl Handler {
         let mut scraper = LocalScraper::new(&index_url)
             .scrape()
             .expect("base url not found");
+        scraper = scraper
+            .iter()
+            .map(|link| {
+                base_url
+                    .join(link)
+                    .to_str()
+                    .expect("cannot construct links from parent path")
+                    .to_owned()
+            }).collect::<IndexSet<String>>();
         let mut broken_links = vec![];
+        let mut parent_path = base_url;
 
         while let Some(link) = scraper.pop() {
-            let url = base_url.join(&link);
+            let url = parent_path.join(&link);
+            if let Some(u) = url.parent() {
+                parent_path = PathBuf::from(&u);
+            }
             match LocalScraper::new(&url).scrape() {
-                Ok(contents) => scraper.extend(contents),
+                Ok(contents) => {
+                    let links = contents
+                        .iter()
+                        .map(|link| {
+                            parent_path
+                                .join(link)
+                                .to_str()
+                                .expect("cannot join link")
+                                .to_string()
+                        }).collect::<IndexSet<String>>();
+                    scraper.extend(links)
+                }
                 Err(_) => broken_links.push(link),
             }
         }
@@ -97,11 +121,11 @@ impl BrokenLinks {
     }
 }
 
-pub trait UrlParent {
+pub trait Parent {
     fn parent(&self) -> Option<String>;
 }
 
-impl UrlParent for Url {
+impl Parent for Url {
     fn parent(&self) -> Option<String> {
         let input = self.as_str();
         let length = if input.ends_with('/') { 3usize } else { 1usize };
@@ -115,7 +139,7 @@ impl UrlParent for Url {
 
 #[cfg(test)]
 mod tests {
-    use super::UrlParent;
+    use super::Parent;
     use reqwest::Url;
 
     #[test]

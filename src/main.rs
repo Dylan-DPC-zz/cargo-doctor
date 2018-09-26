@@ -65,6 +65,6 @@ fn main() {
 
     match results {
         Ok(_) => println!("All links are healthy"),
-        Err(error) => eprintln!("An error has occured: {}", error),
+        Err(error) => eprintln!("{}", error),
     };
 }
