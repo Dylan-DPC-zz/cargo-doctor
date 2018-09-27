@@ -44,7 +44,7 @@ fn main() {
         ).help("accesses documentation stored locally")
         .get_matches();
 
-    let input_path = matches.value_of("PATH");
+    let input_path = matches.value_of("path");
 
     let path = match input_path {
         Some(x) => x.to_string(),

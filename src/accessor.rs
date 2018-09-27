@@ -42,7 +42,7 @@ impl CurrentCrate {
         let metadata = &*(metadata.packages)
             .first()
             .expect("cannot find crate data from Cargo.toml");
-            let name = metadata.name.replace("-", "_").to_owned();
+        let name = metadata.name.replace("-", "_").to_owned();
 
         Ok(CurrentCrate {
             name,

@@ -21,6 +21,7 @@ impl Handler {
         let mut scraper = RemoteScraper::new(&base_url)
             .scrape()
             .expect("base url not found");
+
         scraper = scraper
             .iter()
             .map(|link| {
@@ -31,10 +32,14 @@ impl Handler {
                     .to_owned()
             }).collect::<IndexSet<String>>();
 
+        println!("{:#?}", &scraper);
+
         let mut broken_links = vec![];
 
         let mut parent_url = base_url;
+        let mut visited_urls = vec![];
         while let Some(link) = scraper.pop() {
+            visited_urls.push(link.clone());
             let url = parent_url.join(&link).expect("cannot join links");
             if let Some(u) = url.parent() {
                 parent_url = Url::parse(&u)?;
@@ -43,13 +48,16 @@ impl Handler {
                 Ok(contents) => {
                     let links = contents
                         .iter()
-                        .map(|link| {
+                        .filter(|item| !link.contains(item.as_str()))
+                        .map(|item| {
                             parent_url
-                                .join(link)
+                                .join(item)
                                 .expect("cannot construct links from parent url")
                                 .as_str()
                                 .to_string()
-                        }).collect::<IndexSet<String>>();
+                        }).filter(|item| !visited_urls.contains(item))
+                        .collect::<IndexSet<String>>();
+
                     scraper.extend(links)
                 }
                 Err(_) => broken_links.push(link),
@@ -69,6 +77,7 @@ impl Handler {
         let mut scraper = LocalScraper::new(&index_url)
             .scrape()
             .expect("base url not found");
+
         scraper = scraper
             .iter()
             .map(|link| {
@@ -80,8 +89,9 @@ impl Handler {
             }).collect::<IndexSet<String>>();
         let mut broken_links = vec![];
         let mut parent_path = base_url;
-
+        let mut visited_urls = vec![];
         while let Some(link) = scraper.pop() {
+            visited_urls.push(link.clone());
             let url = parent_path.join(&link);
             if let Some(u) = url.parent() {
                 parent_path = PathBuf::from(&u);
@@ -90,13 +100,15 @@ impl Handler {
                 Ok(contents) => {
                     let links = contents
                         .iter()
+                        .filter(|item| !link.contains(item.as_str()))
                         .map(|link| {
                             parent_path
                                 .join(link)
                                 .to_str()
                                 .expect("cannot join link")
                                 .to_string()
-                        }).collect::<IndexSet<String>>();
+                        }).filter(|item| !visited_urls.contains(item))
+                        .collect::<IndexSet<String>>();
                     scraper.extend(links)
                 }
                 Err(_) => broken_links.push(link),
@@ -144,8 +156,9 @@ mod tests {
 
     #[test]
     fn test_scrape() {
-        let url = Url::parse("https://httpbin.org/anything/foo/").unwrap();
+        let url = Url::parse("https://docs.rs/reqwest/0.9.1/reqwest").unwrap();
         let parent = url.parent();
+        println!("{:#?}", parent);
 
         assert_eq!(parent, Some("https://httpbin.org/anything".to_owned()));
     }
