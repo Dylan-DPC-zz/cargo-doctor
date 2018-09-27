@@ -2,7 +2,7 @@
 name = "cargo-doctor"
 description = "Checks if all links mentioned in cargo docs of a crate are healthy"
 license = "Apache-2.0 OR MIT"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["dylan_DPC <dylan.dpc@gmail.com>"]
 readme = "README.md"
 repository = "https://github.com/Dylan-DPC/cargo-doctor"

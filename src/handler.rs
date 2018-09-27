@@ -32,8 +32,6 @@ impl Handler {
                     .to_owned()
             }).collect::<IndexSet<String>>();
 
-        println!("{:#?}", &scraper);
-
         let mut broken_links = vec![];
 
         let mut parent_url = base_url;
