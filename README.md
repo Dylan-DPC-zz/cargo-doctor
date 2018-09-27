@@ -2,7 +2,7 @@
 Checks if all links mentioned in cargo docs of a crate are active 
 
 [![Build Status](https://travis-ci.org/Dylan-DPC/doctor.svg?branch=master)](https://travis-ci.org/Dylan-DPC/doctor) 
-[![Latest Version](https://img.shields.io/crates/v/doctor.svg)](https://crates.io/crates/doctor) 
+[![Latest Version](https://img.shields.io/crates/v/cargo-doctor.svg)](https://crates.io/crates/cargo-doctor) 
 
 # Installation
 
