@@ -11,5 +11,5 @@ indexmap = "1.0"
 cargo_metadata = "0.6"
 
 [dependencies.clap]
-git = "https://github.com/clap-rs/clap"
+version = "2"
 default_features = false
