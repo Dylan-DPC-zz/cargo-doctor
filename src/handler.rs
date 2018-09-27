@@ -148,18 +148,3 @@ impl Parent for Url {
             .last()
     }
 }
-
-#[cfg(test)]
-mod tests {
-    use super::Parent;
-    use reqwest::Url;
-
-    #[test]
-    fn test_scrape() {
-        let url = Url::parse("https://docs.rs/reqwest/0.9.1/reqwest").unwrap();
-        let parent = url.parent();
-        println!("{:#?}", parent);
-
-        assert_eq!(parent, Some("https://httpbin.org/anything".to_owned()));
-    }
-}
