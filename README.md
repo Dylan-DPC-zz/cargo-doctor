@@ -6,9 +6,15 @@ Checks if all links mentioned in cargo docs of a crate are active
 
 # Installation
 
+```bash
 $ cargo install cargo-doctor
+```
+
+You will need nightly to run this crate as of 0.1.2. 
 
 (Please check cargo's documentation to learn how cargo install works and how to set up your system so it finds binaries installed by cargo.)
+
+
 
 # Usage: 
 
@@ -54,7 +60,7 @@ Right now, I still need to tests for most of the functions, so you can test it l
 cargo run -- -r
 ```
 
-This package is written using Rust 1.29.1. 
+This package is written using Rust 1.30.0-nightly.  
 
 When submitting a Pull request, run `cargo fmt` on the latest nightly before committing. 
 
