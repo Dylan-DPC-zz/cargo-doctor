@@ -40,8 +40,9 @@ fn main() {
             Arg::with_name("local")
                 .short("l")
                 .long("local")
-                .takes_value(false),
-        ).help("accesses documentation stored locally")
+                .takes_value(false)
+                .help("accesses documentation stored locally"),
+        )
         .get_matches();
 
     let input_path = matches.value_of("path");
