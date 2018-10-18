@@ -122,7 +122,7 @@ impl Handler {
 }
 
 #[derive(Debug, Fail)]
-#[fail(display = "broken links: {}", 0)]
+#[fail(display = "broken links: {}", _0)]
 pub struct BrokenLinks(pub LinksList);
 
 impl BrokenLinks {
