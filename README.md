@@ -10,8 +10,6 @@ Checks if all links mentioned in cargo docs of a crate are active
 $ cargo install cargo-doctor
 ```
 
-You will need nightly to run this crate as of 0.1.2. 
-
 (Please check cargo's documentation to learn how cargo install works and how to set up your system so it finds binaries installed by cargo.)
 
 
