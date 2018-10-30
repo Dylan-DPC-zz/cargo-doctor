@@ -14,27 +14,27 @@ $ cargo install cargo-doctor
 
 
 
-# Usage: 
+# Usage:
 
-Doctor scans the docs and checks if every link mentioned is live or broken. It can work with both docs generated locally using `cargo doc` and those uploaded on `docs.rs`. 
+Doctor scans the docs and checks if every link mentioned is live or broken. It can work with both docs generated locally using `cargo doc` and those uploaded on `docs.rs`.
 
-###Local Docs:
-To run doctor on the local docs use the `-l` flag: 
+### Local Docs:
+To run doctor on the local docs use the `-l` flag:
  ```bash
  cargo doctor -l
  # or
  cargo doctor --local
  ```
- 
- This will output either a success message or the list of links that are not found/active. 
- 
- Ensure you have run `cargo doc` before running doctor. 
- 
- ### Remote Docs: 
- 
- To run doctor on docs.rs links of your crate, run: 
+
+ This will output either a success message or the list of links that are not found/active.
+
+ Ensure you have run `cargo doc` before running doctor.
+
+ ### Remote Docs:
+
+ To run doctor on docs.rs links of your crate, run:
 ```bash
-cargo doctor -r 
+cargo doctor -r
 # or
 cargo doctor --remote
 ```
@@ -50,17 +50,17 @@ cargo doctor -r --path="https://docs.rs/cargo_doctor/0.1.0/cargo_doctor/"
 
 # Contribution:
 
-If you want to suggest any new feature or report a bug, you can open an issue here or drop in a pull request directly. 
+If you want to suggest any new feature or report a bug, you can open an issue here or drop in a pull request directly.
 
-Right now, I still need to tests for most of the functions, so you can test it locally by running: 
+Right now, I still need to tests for most of the functions, so you can test it locally by running:
 
-```bash 
+```bash
 cargo run -- -r
 ```
 
-This package is written using Rust 1.30.0-nightly.  
+This package is written using Rust 1.30.0-nightly.
 
-When submitting a Pull request, run `cargo fmt` on the latest nightly before committing. 
+When submitting a Pull request, run `cargo fmt` on the latest nightly before committing.
 
 # License
 
