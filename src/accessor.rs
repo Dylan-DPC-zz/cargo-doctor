@@ -1,4 +1,4 @@
-use cargo_metadata::metadata;
+use cargo_metadata::{MetadataCommand, Version};
 use failure::Error;
 use std::env::current_dir;
 use std::path::{Path, PathBuf};
@@ -6,7 +6,11 @@ use std::path::{Path, PathBuf};
 fn search(dir: &Path) -> Result<PathBuf, Error> {
     let manifest = dir.join("Cargo.toml");
 
-    if metadata(Some(&manifest)).is_ok() {
+    if MetadataCommand::new()
+        .manifest_path(&manifest)
+        .exec()
+        .is_ok()
+    {
         Ok(manifest)
     } else {
         search(dir.parent().expect("cannot access parent"))
@@ -32,13 +36,16 @@ pub fn local_path() -> Result<String, Error> {
 
 pub struct CurrentCrate {
     pub name: String,
-    pub version: String,
+    pub version: Version,
 }
 
 impl CurrentCrate {
     fn load() -> Result<CurrentCrate, Error> {
         let manifest = search(&current_dir()?)?;
-        let metadata = metadata(Some(manifest.as_path())).expect("can't read Cargo.toml");
+        let metadata = MetadataCommand::new()
+            .manifest_path(&manifest)
+            .exec()
+            .expect("can't read Cargo.toml");
         let metadata = &*(metadata.packages)
             .first()
             .expect("cannot find crate data from Cargo.toml");
