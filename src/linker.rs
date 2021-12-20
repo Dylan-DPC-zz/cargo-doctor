@@ -1,6 +1,6 @@
 use failure::Error;
 use indexmap::IndexSet;
-use reqwest::{get, Url};
+use reqwest::{blocking::get, Url};
 use scraper::{Html, Selector};
 use std::fmt::{self, Display, Formatter};
 use std::fs::File;
@@ -28,7 +28,8 @@ impl RemoteScraper {
     }
 
     pub fn scrape(self) -> Result<IndexSet<String>, Error> {
-        let body = get(self.path.as_str())?.text()?;
+        let path = self.path;
+        let body = get(path)?.text()?;
         extract_links_from_document(&body)
     }
 }
@@ -95,14 +96,16 @@ fn extract_links_from_document(body: &str) -> Result<IndexSet<String>, Error> {
                     } else {
                         link
                     }
-                }).map(|x| {
+                })
+                .map(|x| {
                     let replace = x.split("\"").take(1).collect::<String>();
                     if replace.is_empty() {
                         x.to_string()
                     } else {
                         replace
                     }
-                }).map(|x| x.replace("\"", ""))
+                })
+                .map(|x| x.replace("\"", ""))
                 .for_each(|x| {
                     text.insert(x);
                 });

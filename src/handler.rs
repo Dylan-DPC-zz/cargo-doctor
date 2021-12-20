@@ -30,7 +30,8 @@ impl Handler {
                     .expect("cannot construct links from parent url")
                     .as_str()
                     .to_owned()
-            }).collect::<IndexSet<String>>();
+            })
+            .collect::<IndexSet<String>>();
 
         let mut broken_links = vec![];
 
@@ -53,7 +54,8 @@ impl Handler {
                                 .expect("cannot construct links from parent url")
                                 .as_str()
                                 .to_string()
-                        }).filter(|item| !visited_urls.contains(item))
+                        })
+                        .filter(|item| !visited_urls.contains(item))
                         .collect::<IndexSet<String>>();
 
                     scraper.extend(links)
@@ -84,7 +86,8 @@ impl Handler {
                     .to_str()
                     .expect("cannot construct links from parent path")
                     .to_owned()
-            }).collect::<IndexSet<String>>();
+            })
+            .collect::<IndexSet<String>>();
         let mut broken_links = vec![];
         let mut parent_path = base_url;
         let mut visited_urls = vec![];
@@ -105,7 +108,8 @@ impl Handler {
                                 .to_str()
                                 .expect("cannot join link")
                                 .to_string()
-                        }).filter(|item| !visited_urls.contains(item))
+                        })
+                        .filter(|item| !visited_urls.contains(item))
                         .collect::<IndexSet<String>>();
                     scraper.extend(links)
                 }

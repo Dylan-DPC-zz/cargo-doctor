@@ -23,20 +23,23 @@ fn main() {
                 .long("manifest-path")
                 .value_name("PATH")
                 .takes_value(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("path")
                 .short("p")
                 .long("path")
                 .value_name("PATH")
                 .help("Custom path of the docs")
                 .takes_value(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("remote")
                 .short("r")
                 .long("remote")
                 .takes_value(false)
                 .help("accesses documentation on docs.rs"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("local")
                 .short("l")
                 .long("local")
